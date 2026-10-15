@@ -57,6 +57,7 @@ PDF Upload → Data Extraction → Booking Reconciliation → Invoice Draft Gene
 - Created the project repository.
 - Collected sample DHL invoice PDFs for initial exploration.
 - Started examining invoice layout variations for testing and development.
+- also gone through different types of invoice .
 
 Implementation of the core workflow is planned as the next phase.
 
