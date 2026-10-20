@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://freight-invoice-automation.local/schemas/booking.schema.json",
+  "title": "Shipment booking record",
+  "description": "Frozen expected-shipment record used to match invoice shipment IDs and compare charges/details. Records in data/bookings are synthetic fixtures, not live carrier bookings.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "data_classification",
+    "booking_id",
+    "carrier",
+    "shipment_id",
+    "product",
+    "expected_charges"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "data_classification": {
+      "const": "synthetic",
+      "description": "These bookings are labelled synthetic. They are not real customer or carrier bookings."
+    },
+    "booking_id": {
+      "type": "string",
+      "pattern": "^SYN-BK-[0-9]{3}$"
+    },
+    "carrier": {
+      "type": "string",
+      "description": "Carrier name aligned with invoice vendor, e.g. DHL."
+    },
+    "shipment_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Expected shipment ID. Must match the invoice shipment number after trimming spaces (leading zeros kept)."
+    },
+    "billing_number": {
+      "type": ["string", "null"]
+    },
+    "customer_number": {
+      "type": ["string", "null"]
+    },
+    "shipping_product": {
+      "type": ["string", "null"]
+    },
+    "product": {
+      "type": "string",
+      "description": "Booked product/service, e.g. DHL PAKET (GK) to 4 KG."
+    },
+    "weight_kg": {
+      "type": ["number", "null"]
+    },
+    "posting_date": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "destination": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": ["string", "null"] },
+        "street": { "type": ["string", "null"] },
+        "postal_code": { "type": ["string", "null"] },
+        "city": { "type": ["string", "null"] },
+        "country": { "type": ["string", "null"] }
+      }
+    },
+    "services": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "currency": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3
+    },
+    "expected_charges": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "source", "net"],
+      "properties": {
+        "status": {
+          "const": "known",
+          "description": "Booking-side amounts are synthetic expected figures, not DHL sample invoice totals."
+        },
+        "source": {
+          "const": "synthetic_booking_expected"
+        },
+        "net": { "type": "number" },
+        "tax": { "type": ["number", "null"] },
+        "gross": { "type": ["number", "null"] }
+      }
+    },
+    "linked_sample_pdf": {
+      "type": ["string", "null"],
+      "description": "dataset_pdfs file that prints this shipment_id. Null if the booking is not tied to a sample row."
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}

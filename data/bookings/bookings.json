@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0.0",
+  "data_classification": "synthetic",
+  "description": "Synthetic booking fixtures for reconciliation tests. Shipment IDs and destination text are copied from DHL sample OVERVIEW rows so matching can use real printed IDs. Charge figures are synthetic expected values only; they are not DHL billed amounts. Masked PDF amounts remain unknown.",
+  "bookings": [
+    {
+      "schema_version": "1.0.0",
+      "data_classification": "synthetic",
+      "booking_id": "SYN-BK-001",
+      "carrier": "DHL",
+      "shipment_id": "987654323",
+      "billing_number": "50070040000101",
+      "customer_number": "5007004000",
+      "shipping_product": "DHL PAKET",
+      "product": "DHL PAKET (GK) to 4 KG",
+      "weight_kg": 3.33,
+      "posting_date": "2026-06-02",
+      "destination": {
+        "name": "Claudia Musterfrau",
+        "street": "Musterstraße 4",
+        "postal_code": "53797",
+        "city": "Lohmar",
+        "country": "Deutschland"
+      },
+      "services": [
+        "Service Desired time",
+        "Toll and CO2 Surcharge",
+        "Energy surcharge DHL Paket (GK)"
+      ],
+      "currency": "EUR",
+      "expected_charges": {
+        "status": "known",
+        "source": "synthetic_booking_expected",
+        "net": 12.5,
+        "tax": 2.38,
+        "gross": 14.88
+      },
+      "linked_sample_pdf": "dhl-sample-invoice-dhl-paket-national-individual-shipments-per-billing-number-062026.pdf",
+      "notes": "Fixture for successful booking match on shipment ID and shipment details. Invoice line amounts on the linked DHL sample are masked and stay unknown; do not treat expected_charges as billed totals."
+    },
+    {
+      "schema_version": "1.0.0",
+      "data_classification": "synthetic",
+      "booking_id": "SYN-BK-002",
+      "carrier": "DHL",
+      "shipment_id": "987654325",
+      "billing_number": "50070040000101",
+      "customer_number": "5007004000",
+      "shipping_product": "DHL PAKET",
+      "product": "DHL PAKET (GK) to 2 KG",
+      "weight_kg": 1.8,
+      "posting_date": "2026-06-02",
+      "destination": {
+        "name": "Petra Musterfrau",
+        "street": "Mustergasse 1",
+        "postal_code": "52076",
+        "city": "Aachen",
+        "country": "Deutschland"
+      },
+      "services": [
+        "Toll and CO2 Surcharge",
+        "Energy surcharge DHL Paket (GK)"
+      ],
+      "currency": "EUR",
+      "expected_charges": {
+        "status": "known",
+        "source": "synthetic_booking_expected",
+        "net": 8.0,
+        "tax": 1.52,
+        "gross": 9.52
+      },
+      "linked_sample_pdf": "dhl-sample-invoice-dhl-paket-national-individual-shipments-per-billing-number-062026.pdf",
+      "notes": "Fixture for charge mismatch. Shipment ID and details follow the sample OVERVIEW row. expected_charges are synthetic. Compare them only to the synthetic billed example in reconciliation_fixtures.json, never to masked DHL amounts."
+    }
+  ]
+}

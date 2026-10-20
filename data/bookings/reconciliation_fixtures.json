@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0.0",
+  "data_classification": "synthetic",
+  "description": "Labels the three Step 1 reconciliation cases. Synthetic billed amounts exist only here for later charge comparison tests. They are not extracted from dataset_pdfs and are not real invoice amounts.",
+  "source_invoice_pdf": "dataset_pdfs/dhl-sample-invoice-dhl-paket-national-individual-shipments-per-billing-number-062026.pdf",
+  "dhl_sample_amounts": {
+    "status": "unknown",
+    "reason": "masked_on_source_pdf"
+  },
+  "scenarios": [
+    {
+      "id": "successful-booking-match",
+      "scenario": "successful_booking_match",
+      "booking_id": "SYN-BK-001",
+      "shipment_id": "987654323",
+      "invoice_amount_on_sample_pdf": {
+        "status": "unknown",
+        "reason": "masked_on_source_pdf"
+      },
+      "expected_reconciliation": "match",
+      "charge_comparison": "not_applicable_billed_amount_unknown",
+      "detail_comparison": "agree",
+      "workflow": "continue",
+      "notes": "Shipment 987654323 is printed on the national individual sample (current period, ICR 090, Claudia Musterfrau). A synthetic booking exists with the same ID and details. Billed charges stay unknown, so this is an ID/details match, not a numeric DHL amount match."
+    },
+    {
+      "id": "charge-mismatch",
+      "scenario": "charge_mismatch",
+      "booking_id": "SYN-BK-002",
+      "shipment_id": "987654325",
+      "invoice_amount_on_sample_pdf": {
+        "status": "unknown",
+        "reason": "masked_on_source_pdf"
+      },
+      "synthetic_billed_for_test_only": {
+        "data_classification": "synthetic",
+        "source": "synthetic_test_fixture",
+        "currency": "EUR",
+        "net": 11.0,
+        "tax": 2.09,
+        "gross": 13.09,
+        "not": "a DHL sample invoice amount"
+      },
+      "expected_reconciliation": "charge_mismatch",
+      "charge_comparison": "synthetic_billed_net_11.00_vs_booking_expected_net_8.00",
+      "detail_comparison": "agree",
+      "workflow": "flag_for_review",
+      "notes": "Shipment 987654325 is printed on the same sample (Petra Musterfrau, Aachen). Identity matches SYN-BK-002. Charge mismatch is demonstrated only with synthetic_billed_for_test_only versus SYN-BK-002 expected_charges. Do not fill masked PDF figures with 11.00 or 8.00."
+    },
+    {
+      "id": "missing-booking",
+      "scenario": "missing_booking",
+      "booking_id": null,
+      "shipment_id": "987654328",
+      "invoice_amount_on_sample_pdf": {
+        "status": "unknown",
+        "reason": "masked_on_source_pdf"
+      },
+      "expected_reconciliation": "missing_booking",
+      "charge_comparison": "not_applicable_no_booking",
+      "workflow": "flag_for_review",
+      "notes": "Shipment 987654328 is printed on the national individual sample (sheet/ICR 000, current period) and has no row in bookings.json. That absence is the missing-booking case."
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "title": "Required fields and reconciliation rules",
+  "applies_to": {
+    "invoice": "schemas/invoice.schema.json",
+    "booking": "schemas/booking.schema.json"
+  },
+  "required_invoice_fields": [
+    "vendor.name",
+    "bill_to.name",
+    "invoice_number",
+    "invoice_date",
+    "currency",
+    "layout",
+    "identifiers.customer_number",
+    "totals.net",
+    "totals.tax",
+    "totals.gross"
+  ],
+  "required_invoice_fields_when_layout_individual_shipments": [
+    "shipments[].shipment_id"
+  ],
+  "required_booking_fields": [
+    "booking_id",
+    "carrier",
+    "shipment_id",
+    "product",
+    "expected_charges.net"
+  ],
+  "amount_rules": [
+    "DHL sample PDFs print masked amounts (XXX,XX, X.XX, XX,XX). Store those as money.status=unknown, reason=masked_on_source_pdf.",
+    "Do not invent numeric invoice amounts for dataset_pdfs files.",
+    "Booking expected_charges are synthetic_booking_expected. They are not billed DHL amounts.",
+    "When both billed and expected amounts are known, they match only if equal to the cent (absolute difference < 0.01) in the same currency.",
+    "When billed amount is unknown, charge comparison is not_applicable. Do not treat unknown as equal to a synthetic expected charge."
+  ],
+  "shipment_id_rules": [
+    "Trim whitespace; keep leading zeros; compare case-sensitively as digits/strings.",
+    "Reconciliation keys off invoice shipments[].shipment_id against booking.shipment_id.",
+    "Summarized layouts with an empty shipments array cannot complete shipment-ID match; flag for review (not an auto-continue)."
+  ],
+  "detail_comparison_fields": [
+    "product",
+    "weight_kg",
+    "destination.city",
+    "destination.country",
+    "services"
+  ],
+  "reconciliation_outcomes": {
+    "match": "A booking exists with the same shipment_id, compared details agree, and charge comparison is either equal-to-the-cent or not_applicable because the billed amount is unknown.",
+    "charge_mismatch": "A booking exists with the same shipment_id, but known billed vs expected charges differ by 0.01 or more, or compared details disagree.",
+    "missing_booking": "An invoiced charged shipment_id has no booking record. Flag for review.",
+    "not_applicable_no_shipment_ids": "Invoice layout is summarized (no shipment IDs). Flag for review."
+  },
+  "continue_vs_review": {
+    "continue_to_draft": ["match"],
+    "flag_for_review": ["charge_mismatch", "missing_booking", "not_applicable_no_shipment_ids"]
+  }
+}

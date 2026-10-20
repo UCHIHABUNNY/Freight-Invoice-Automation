@@ -1,0 +1,356 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://freight-invoice-automation.local/schemas/invoice.schema.json",
+  "title": "Freight invoice (extracted document)",
+  "description": "Frozen fields for billed invoice extraction. Derived from Freight_Invoice_Automation_English.md and the DHL sample PDFs in dataset_pdfs. Masked sample amounts MUST be stored as unknown; they are not numeric values.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "source",
+    "vendor",
+    "bill_to",
+    "invoice_number",
+    "invoice_date",
+    "currency",
+    "layout",
+    "identifiers",
+    "totals",
+    "tax_lines",
+    "line_items",
+    "shipments"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "file_name"],
+      "properties": {
+        "kind": {
+          "enum": ["dataset_pdf_sample", "user_upload"]
+        },
+        "file_name": {
+          "type": "string",
+          "description": "PDF file name, e.g. a file in dataset_pdfs."
+        }
+      }
+    },
+    "vendor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Printed sender, e.g. DHL Paket GmbH or Deutsche Post AG."
+        },
+        "address": {
+          "type": ["string", "null"]
+        },
+        "vat_id": {
+          "type": ["string", "null"],
+          "description": "Vendor VAT ID printed on the invoice (e.g. DE 813312787)."
+        }
+      }
+    },
+    "bill_to": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Billed party header, e.g. Musterfirma GmbH."
+        },
+        "address": {
+          "type": ["string", "null"]
+        },
+        "vat_id": {
+          "type": ["string", "null"],
+          "description": "Customer sales tax ID quoted for payment, e.g. DE123456789."
+        }
+      }
+    },
+    "invoice_number": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Invoice number printed for payment reference."
+    },
+    "invoice_date": {
+      "$ref": "#/$defs/iso_date"
+    },
+    "due_date": {
+      "description": "ISO date when printed as a date. Null when absent, a placeholder such as <Date>, or a non-date phrase such as payable immediately.",
+      "oneOf": [
+        { "$ref": "#/$defs/iso_date" },
+        { "type": "null" }
+      ]
+    },
+    "due_date_text": {
+      "type": ["string", "null"],
+      "description": "Raw due-date wording when it is not a calendar date."
+    },
+    "currency": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3,
+      "description": "ISO 4217. DHL samples print EUR."
+    },
+    "layout": {
+      "enum": ["individual_shipments", "summarized"],
+      "description": "individual_shipments lists shipment numbers; summarized lists product/service totals only."
+    },
+    "shipping_product": {
+      "type": ["string", "null"],
+      "description": "Used shipping product, e.g. DHL PAKET, DHL PAKET International, DHL EUROPAKET."
+    },
+    "customer_reference": {
+      "type": ["string", "null"],
+      "description": "Your reference on the DHL header."
+    },
+    "posting_period_start": {
+      "oneOf": [{ "$ref": "#/$defs/iso_date" }, { "type": "null" }]
+    },
+    "posting_period_end": {
+      "oneOf": [{ "$ref": "#/$defs/iso_date" }, { "type": "null" }]
+    },
+    "performance_period_start": {
+      "oneOf": [{ "$ref": "#/$defs/year_month" }, { "type": "null" }]
+    },
+    "performance_period_end": {
+      "oneOf": [{ "$ref": "#/$defs/year_month" }, { "type": "null" }]
+    },
+    "identifiers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["customer_number"],
+      "properties": {
+        "billing_number": {
+          "type": ["string", "null"],
+          "description": "Billing number, spaces optional (e.g. 5007004000 01 01)."
+        },
+        "customer_number": {
+          "type": "string",
+          "description": "Customer number quoted for payment (e.g. 5007004000)."
+        },
+        "icr_or_sheet_numbers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Settled sheet or ICR numbers from the header."
+        }
+      }
+    },
+    "customer": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": ["string", "null"] },
+        "address": { "type": ["string", "null"] }
+      }
+    },
+    "poster": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": ["string", "null"] },
+        "address": { "type": ["string", "null"] }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["net", "tax", "gross"],
+      "properties": {
+        "net": { "$ref": "#/$defs/money" },
+        "tax": { "$ref": "#/$defs/money" },
+        "gross": { "$ref": "#/$defs/money" },
+        "quantity_of_shipments": { "type": ["integer", "null"], "minimum": 0 },
+        "quantity_of_services": { "type": ["integer", "null"], "minimum": 0 },
+        "announced_shipments_count": { "type": ["integer", "null"], "minimum": 0 },
+        "identified_deviations_count": { "type": ["integer", "null"], "minimum": 0 },
+        "shipments_not_handed_in_count": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "tax_lines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["tax_id", "rate_percent", "taxable_base", "tax_amount"],
+        "properties": {
+          "tax_id": {
+            "type": "string",
+            "description": "Printed sales tax ID: C1 full 19%, C0 tax-free, CD 0% (e.g. Switzerland)."
+          },
+          "rate_percent": {
+            "type": ["number", "null"]
+          },
+          "taxable_base": { "$ref": "#/$defs/money" },
+          "tax_amount": { "$ref": "#/$defs/money" }
+        }
+      }
+    },
+    "line_items": {
+      "type": "array",
+      "description": "Summary and/or per-shipment charge rows. Amounts from masked DHL samples stay unknown.",
+      "items": { "$ref": "#/$defs/invoice_line" }
+    },
+    "shipments": {
+      "type": "array",
+      "description": "Per-shipment rows from individual-layout OVERVIEW. Empty for summarized layouts that print no shipment numbers.",
+      "items": { "$ref": "#/$defs/invoice_shipment" }
+    },
+    "identified_deviations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["shipment_id", "identified_fact"],
+        "properties": {
+          "posting_date": {
+            "oneOf": [{ "$ref": "#/$defs/iso_date" }, { "type": "null" }]
+          },
+          "shipment_id": { "$ref": "#/$defs/shipment_id" },
+          "identified_fact": { "type": "string" },
+          "announced_value": { "type": ["string", "null"] },
+          "billed_value": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "shipments_not_handed_in": {
+      "type": "array",
+      "description": "Announced EDI shipments cancelled and not charged.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["shipment_id"],
+        "properties": {
+          "posting_date": {
+            "oneOf": [{ "$ref": "#/$defs/iso_date" }, { "type": "null" }]
+          },
+          "sheet_or_icr_no": { "type": ["string", "null"] },
+          "shipment_id": { "$ref": "#/$defs/shipment_id" },
+          "product": { "type": ["string", "null"] },
+          "weight_kg": { "type": ["number", "null"] },
+          "recipient": { "$ref": "#/$defs/recipient" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "iso_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "year_month": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}$"
+    },
+    "shipment_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Shipment number / Shipment No. printed on individual DHL overviews. Keep leading zeros. Do not pad or invent IDs."
+    },
+    "money": {
+      "description": "Known numeric amount, or unknown when the source prints a mask (XXX,XX / X.XX) or omits the figure.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "reason"],
+          "properties": {
+            "status": { "const": "unknown" },
+            "reason": {
+              "enum": ["masked_on_source_pdf", "not_printed"]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "value", "source"],
+          "properties": {
+            "status": { "const": "known" },
+            "value": { "type": "number" },
+            "source": {
+              "enum": ["extracted_unmasked_source"],
+              "description": "Only for later unmasked uploads. Never use for current DHL sample PDFs."
+            }
+          }
+        }
+      ]
+    },
+    "recipient": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": ["string", "null"] },
+        "street": { "type": ["string", "null"] },
+        "postal_code": { "type": ["string", "null"] },
+        "city": { "type": ["string", "null"] },
+        "country": { "type": ["string", "null"] }
+      }
+    },
+    "invoice_line": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "amount"],
+      "properties": {
+        "kind": {
+          "enum": ["base_product", "service", "surcharge", "other"]
+        },
+        "description": { "type": "string" },
+        "quantity": { "type": ["number", "null"] },
+        "unit_price": { "$ref": "#/$defs/money" },
+        "amount": { "$ref": "#/$defs/money" },
+        "tax_id": { "type": ["string", "null"] },
+        "destination_country": { "type": ["string", "null"] },
+        "zone": { "type": ["string", "null"] },
+        "posting_date": {
+          "oneOf": [{ "$ref": "#/$defs/iso_date" }, { "type": "null" }]
+        },
+        "sheet_or_icr_no": { "type": ["string", "null"] },
+        "shipment_id": {
+          "oneOf": [{ "$ref": "#/$defs/shipment_id" }, { "type": "null" }]
+        }
+      }
+    },
+    "invoice_shipment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shipment_id", "period_bucket"],
+      "properties": {
+        "shipment_id": { "$ref": "#/$defs/shipment_id" },
+        "period_bucket": {
+          "enum": ["previous", "current"],
+          "description": "Orders from previous vs current posting period."
+        },
+        "posting_date": {
+          "oneOf": [{ "$ref": "#/$defs/iso_date" }, { "type": "null" }]
+        },
+        "sheet_or_icr_no": { "type": ["string", "null"] },
+        "product": { "type": ["string", "null"] },
+        "weight_kg": { "type": ["number", "null"] },
+        "customer_shipment_reference": {
+          "type": ["string", "null"],
+          "description": "Per-shipment <Reference> when printed."
+        },
+        "destination_country": { "type": ["string", "null"] },
+        "zone": { "type": ["string", "null"] },
+        "recipient": { "$ref": "#/$defs/recipient" },
+        "services": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Named extras, e.g. Toll and CO2 Surcharge, Energy surcharge, GoGreen, cash on delivery."
+        },
+        "charged": {
+          "type": "boolean",
+          "description": "False for shipments listed as not handed in."
+        }
+      }
+    }
+  }
+}
